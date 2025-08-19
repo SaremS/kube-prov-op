@@ -55,7 +55,14 @@ resource "hcloud_server" "this" {
   name        = var.root_vm_config.name
   image       = var.root_vm_config.image
   server_type = var.root_vm_config.server_type
-  location    = var.root_vmn_config.location
+  location    = var.root_vm_config.location
 
   ssh_keys = [hcloud_ssh_key.this.id]
+}
+
+
+### Outputs
+
+output "vm_ip4_address" {
+  value = hcloud_server.this.ipv4_address
 }
