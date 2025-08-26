@@ -1,0 +1,33 @@
+- name: Verify Swap off
+  hosts: all
+  become: true
+  tasks:
+    - name: "TASK: Verify that swap is currently disabled"
+      block:
+        - name: Check swap status with 'swapon --show'
+          ansible.builtin.command: swapon --show
+          register: swapon_result
+          changed_when: false
+
+        - name: Assert that swap is off
+          ansible.builtin.assert:
+            that:
+              - swapon_result.stdout == ""
+            fail_msg: "FAIL: Swap is still active. 'swapon --show' returned '{{ swapon_result.stdout }}'."
+            success_msg: "SUCCESS: Swap is correctly disabled in the current session."
+
+    - name: "TASK: Verify no active swap entry exists in /etc/fstab"
+      block:
+        - name: Check for uncommented swap entries in /etc/fstab
+          ansible.builtin.command: "grep -E '^\\s*[^#].*\\sswap\\s' /etc/fstab"
+          register: fstab_check
+          failed_when: false
+          changed_when: false
+
+        - name: Assert that /etc/fstab has no active swap entries
+          ansible.builtin.assert:
+            that:
+              # The check passes if the grep command found nothing (stdout is empty).
+              - fstab_check.stdout == ""
+            fail_msg: "FAIL: Found an active swap entry in /etc/fstab: '{{ fstab_check.stdout }}'."
+            success_msg: "SUCCESS: /etc/fstab is correctly configured with no active swap entries."
