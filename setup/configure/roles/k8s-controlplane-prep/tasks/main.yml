@@ -1,0 +1,15 @@
+---
+- name: Prepare VM for Kubernetes
+  hosts: all
+  become: yes
+  tasks:
+    - name: Disable swap for the current session
+      ansible.builtin.command: swapoff -a
+      register: swap_status
+      changed_when: '"swapoff: " not in swap_status.stdout'
+
+    - name: Remove swap entry from /etc/fstab
+      ansible.builtin.lineinfile:
+        path: /etc/fstab
+        regexp: '^(.*swap.*)$'
+        state: absent
