@@ -5,4 +5,4 @@
   tasks:
     - name: "Include k8s-controleplane-prep role" 
       include_role:
-        name: "../../roles/k8s-controlplane-prep/tasks"
+        name: "../../roles/k8s-controlplane-prep"

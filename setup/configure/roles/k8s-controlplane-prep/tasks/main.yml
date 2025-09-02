@@ -1,15 +1,34 @@
 ---
-- name: Prepare VM for Kubernetes
-  hosts: all
-  become: yes
-  tasks:
-    - name: Disable swap for the current session
-      ansible.builtin.command: swapoff -a
-      register: swap_status
-      changed_when: '"swapoff: " not in swap_status.stdout'
+- name: Check if /etc/fstab exists
+  stat:
+    path: "/etc/fstab"
+    get_attributes: false
+    get_checksum: false
+    get_mime: false
+  register: fstab_file
 
-    - name: Remove swap entry from /etc/fstab
-      ansible.builtin.lineinfile:
-        path: /etc/fstab
-        regexp: '^(.*swap.*)$'
-        state: absent
+- name: Remove swapfile from /etc/fstab
+  ansible.posix.mount:
+    name: "{{ item }}"
+    fstype: swap
+    state: absent
+  loop:
+    - swap
+    - none
+  when: fstab_file.stat.exists
+
+- name: Mask swap.target (persist swapoff)
+  ansible.builtin.systemd_service:
+    name: swap.target
+    masked: true
+  become: true
+
+- name: "SESSION: Check if swap is currently active"
+  ansible.builtin.command: swapon --show
+  register: swapon_show
+  changed_when: false
+  failed_when: false
+
+- name: Disable swap
+  command: /sbin/swapoff -a
+  when: swapon_show.stdout != ""

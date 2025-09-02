@@ -27,7 +27,6 @@
         - name: Assert that /etc/fstab has no active swap entries
           ansible.builtin.assert:
             that:
-              # The check passes if the grep command found nothing (stdout is empty).
               - fstab_check.stdout == ""
             fail_msg: "FAIL: Found an active swap entry in /etc/fstab: '{{ fstab_check.stdout }}'."
             success_msg: "SUCCESS: /etc/fstab is correctly configured with no active swap entries."
