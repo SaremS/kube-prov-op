@@ -32,7 +32,8 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install ansible molecule 'molecule-plugins[vagrant]' 'pyyaml >= 5.1' 'python-vagrant == 1.0.0' selinux
+          pip install ansible molecule 'pyyaml >= 5.1' 'python-vagrant == 1.0.0' selinux
+          pip install 'pip install 'molecule-plugins[vagrant]'
 
       - name: Run Molecule tests
         run: |
