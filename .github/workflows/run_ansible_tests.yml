@@ -15,8 +15,14 @@ jobs:
       - name: Check out the codebase
         uses: actions/checkout@v4
 
-      - name: Set up Vagrant and VirtualBox
-        uses: hashicorp/setup-vagrant@v2
+      - name: Install VirtualBox
+        run: sudo apt-get install virtualbox
+
+      - name: Set up Vagrant
+        run: |
+          wget -O - https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(grep -oP '(?<=UBUNTU_CODENAME=).*' /etc/os-release || lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
+          sudo apt update && sudo apt install vagrant
 
       - name: Set up Python 3
         uses: actions/setup-python@v5
