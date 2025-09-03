@@ -36,5 +36,5 @@ jobs:
 
       - name: Run Molecule tests
         run: |
-          cd configure
+          cd setup/configure
           molecule test --all
