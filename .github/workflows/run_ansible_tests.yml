@@ -1,0 +1,42 @@
+name: Run Ansible Tests
+
+on:
+  push:
+    branches:
+      - '**' 
+    paths:
+      - 'configure/**'
+      - '.github/workflows/run_ansible_tests.yml' 
+jobs:
+  molecule:
+    name: Molecule (Vagrant)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the codebase
+        uses: actions/checkout@v4
+
+      - name: Install VirtualBox
+        run: sudo apt-get install virtualbox
+
+      - name: Install Vagrant
+        run: |
+          wget -O - https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(grep -oP '(?<=UBUNTU_CODENAME=).*' /etc/os-release || lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
+          sudo apt update && sudo apt install vagrant
+
+      - name: Set up Python 3
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install ansible 'molecule == 25.1.0' 'pyyaml >= 5.1' 'python-vagrant == 1.0.0' selinux
+          pip install 'molecule-plugins[vagrant] == 23.7.0'
+          pip freeze
+
+      - name: Run Molecule tests
+        run: |
+          cd setup/configure
+          molecule test --all
