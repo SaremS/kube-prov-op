@@ -1,0 +1,24 @@
+---
+dependency:
+  name: galaxy
+  requirements-file: requirements.yml
+
+driver:
+  name: vagrant
+
+platforms:
+  - name: instance
+    box: debian/bullseye64
+
+provisioner:
+  name: ansible
+  options:
+    D: true
+
+verifier:
+  name: ansible
+
+lint: |
+  set -e
+  yamllint .
+  ansible-lint

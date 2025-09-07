@@ -1,0 +1,50 @@
+- name: Verify runc installation
+  hosts: all
+  become: true
+  gather_facts: false
+  vars:
+    runc_path: /usr/local/sbin/runc
+    temp_download_path: /tmp/runc.amd64
+
+  tasks:
+    - name: Get status of runc binary
+      ansible.builtin.stat:
+        path: "{{ runc_path }}"
+      register: runc_stat
+
+    - name: Assert runc binary exists and has correct permissions
+      ansible.builtin.assert:
+        that:
+          - runc_stat.stat.exists
+          - runc_stat.stat.mode == '0755'
+        fail_msg: >
+          runc binary at '{{ runc_path }}' does not exist or has incorrect
+          permissions. Expected mode '0755', but got '{{ runc_stat.stat.mode | default('N/A') }}'.
+        success_msg: "runc binary exists with correct permissions (0755)."
+
+    - name: Attempt to execute the runc binary
+      ansible.builtin.command:
+        cmd: "{{ runc_path }} --version"
+      register: runc_version
+      changed_when: false
+      ignore_errors: true 
+
+    - name: Assert the runc command executed successfully
+      ansible.builtin.assert:
+        that:
+          - runc_version.rc == 0
+          - "'runc version' in (runc_version.stdout ~ runc_version.stderr)"
+        fail_msg: "The 'runc --version' command failed or returned unexpected output. RC={{ runc_version.rc }}"
+        success_msg: "Successfully executed 'runc --version'."
+
+    - name: Get status of temporary download file
+      ansible.builtin.stat:
+        path: "{{ temp_download_path }}"
+      register: temp_file_stat
+
+    - name: Assert the temporary download file has been removed
+      ansible.builtin.assert:
+        that:
+          - not temp_file_stat.stat.exists
+        fail_msg: "The temporary download file '{{ temp_download_path }}' was not removed."
+        success_msg: "The temporary download file was successfully cleaned up."

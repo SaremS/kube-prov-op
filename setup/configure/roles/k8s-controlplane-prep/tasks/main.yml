@@ -1,5 +1,5 @@
 ---
-- name: Check if /etc/fstab exists
+- name: Node Preparation | Check if /etc/fstab exists
   stat:
     path: "/etc/fstab"
     get_attributes: false
@@ -7,7 +7,7 @@
     get_mime: false
   register: fstab_file
 
-- name: Remove swapfile from /etc/fstab
+- name: Node Preparation | Remove swapfile from /etc/fstab
   ansible.posix.mount:
     name: "{{ item }}"
     fstype: swap
@@ -17,18 +17,18 @@
     - none
   when: fstab_file.stat.exists
 
-- name: Mask swap.target (persist swapoff)
+- name: Node Preparation | Mask swap.target (persist swapoff)
   ansible.builtin.systemd_service:
     name: swap.target
     masked: true
   become: true
 
-- name: "SESSION: Check if swap is currently active"
+- name: Node Preparation | Check if swap is currently active"
   ansible.builtin.command: swapon --show
   register: swapon_show
   changed_when: false
   failed_when: false
 
-- name: Disable swap
+- name: Node Preparation | Disable swap
   command: /sbin/swapoff -a
   when: swapon_show.stdout != ""
