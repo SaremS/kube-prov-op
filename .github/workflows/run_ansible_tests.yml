@@ -5,7 +5,7 @@ on:
     branches:
       - '**' 
     paths:
-      - 'configure/**'
+      - 'setup/configure/**'
       - '.github/workflows/run_ansible_tests.yml' 
 jobs:
   molecule:
